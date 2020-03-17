@@ -24,7 +24,10 @@ async def test_trust_ping_with_response_requested_true(connection):
     expected_trust_pong_schema = MessageSchema({
         "@type": "did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/trust_ping/1.0/ping_response",
         "@id": str,
-        "~thread": {"thid": str},
+        "~thread": {
+            "thid": str,
+            Optional('sender_order'): int
+        },
         Optional("~timing"): {
             Optional("in_time"): str,
             Optional("out_time"): str
@@ -37,12 +40,13 @@ async def test_trust_ping_with_response_requested_true(connection):
         # "@id" is added by the staticagent lib
         "response_requested": True
     })
+    print("Sending Ping and waiting for TrustPing response")
+
     #print('Sending message:', trust_ping.pretty_print())
     trust_pong = await connection.send_and_await_reply_async(
         trust_ping,
-        timeout=1
+        timeout=100
     )
-
     #print('Received message:', trust_pong.pretty_print())
 
     assert trust_pong.mtc.is_authcrypted()

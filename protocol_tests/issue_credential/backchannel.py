@@ -18,7 +18,7 @@ class IssueCredentialBackchannel(ABC):
         """
         raise NotImplementedError()
 
-    async def issue_credential_v1_0_issuer_send_cred_offer(self, conn, cred_def, attrs) -> str:
+    async def issue_credential_v1_0_issuer_send_cred_offer(self, conn, attrs) -> str:
         """The issuer sends a credential offer and returns the message id."""
         raise NotImplementedError()
 

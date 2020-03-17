@@ -1,6 +1,6 @@
 # Aries Protocol Test Suite Configuration files
 config.toml
-
+.idea/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

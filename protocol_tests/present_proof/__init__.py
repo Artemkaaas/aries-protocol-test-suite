@@ -81,7 +81,7 @@ class Handler(IssueCredentialHandler):
         b64_proof = await self.provider.present_proof_v1_0_prover_create_presentation(req_attach)
         thid = self.thid(msg)
         # Send the request-credential message and wait for the reply
-        msg = await conn.send_and_await_reply_async({
+        msg = await conn.send_async({
             "@type": "{}/presentation".format(self.PP_PID),
             "~thread": {"thid": thid},
             "comment": "This is my proof",

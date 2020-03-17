@@ -118,9 +118,8 @@ class IndyProvider(Provider, IssueCredentialProvider):
                 ci = attrCred['cred_info']
                 found = True
                 my_creds[ref] = ci
-                if restrictions:
-                    req_attrs[ref] = {
-                        'cred_id': ci['referent'], 'revealed': True}
+                req_attrs[ref] = {
+                    'cred_id': ci['referent'], 'revealed': True}
             if not restrictions and not ref in sa_attrs:
                 raise Exception(
                     "Missing value for self-attested attribute '{}'".format(ref))

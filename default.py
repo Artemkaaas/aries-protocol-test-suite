@@ -1,4 +1,5 @@
 """Default implementations."""
+import json
 
 from protocol_tests.backchannel import (
     Backchannel, SubjectConnectionInfo
@@ -57,3 +58,48 @@ class ManualBackchannel(Backchannel, ConnectionsBackchannel):
         print('Paste the following invitation into the test subject.')
         print('Generated invitation: ', invite)
         pause()
+
+    async def discover_features_v1_0_requester_start(self, verkey, query=".*", comment=None):
+        """Start discover-features protocol from the requester role."""
+        print("Send Disclose Query: " + query)
+        pause()
+        return
+
+    async def trust_ping_v1_0_send_ping(self, conn):
+        """Send a trustping to the specified connection."""
+        print("Send Trust Ping")
+        pause()
+        return
+
+    async def issue_credential_v1_0_issuer_send_cred_offer(self, conn, attrs) -> str:
+        print("Send Credential Offer")
+        pause()
+        return ''
+
+    async def issue_credential_v1_0_holder_accept_cred_offer(self, id: str):
+        print("Accept Credential Offer")
+        pause()
+        return
+
+    async def present_proof_v1_0_verifier_send_proof_request(self, connection, proof_request) -> str:
+        """
+        The agent under test sends a proof request and returns the thread ID.
+        """
+        print("Send Presentation Request: " + json.dumps(proof_request))
+        pause()
+        return ''
+
+    async def present_proof_v1_0_prover_send_proof(self, id: str):
+        """
+        The agent under test sends a proof request and returns the thread ID.
+        """
+        print("Wait for Proof")
+        pause()
+        return
+
+    async def present_proof_v1_0_verifier_verify_proof(self, id: str) -> dict:
+        """
+        The agent under test verifies a proof and returns the attributes and their values.
+        """
+        print("Verify Proof")
+        return {}

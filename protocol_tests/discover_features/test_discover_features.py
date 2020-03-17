@@ -2,6 +2,7 @@
 Test the discover features protocol family as defined at https://github.com/hyperledger/aries-rfcs/tree/master/features/0031-discover-features.
 Roles tested: requester and responder.
 """
+from asyncio import wait_for
 
 import pytest
 
@@ -24,6 +25,11 @@ async def requester(backchannel, connection, query, comment):
     # Now tell the agent under test to send a query message
     resp = await backchannel.discover_features_v1_0_requester_start(connection.verkey_b58, query, comment)
     # Make sure an additional message was received
+
+    with connection.next('did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/discover-features/1.0/query') as next_request:
+        request = await wait_for(next_request, 300)
+        await handler.query(request, connection)
+
     assert handler.query_message_count == count + 1
 
 @pytest.mark.asyncio
@@ -66,9 +72,11 @@ async def responder(connection, query, comment):
         'query': query,
         'comment': comment,
     })
+    print("Sending Query and waiting for Disclose")
+
     resp = await connection.send_and_await_reply_async(
         req,
-        timeout=1
+        timeout=100
     )
     # Validate the response
     assert resp.mtc.is_authcrypted()

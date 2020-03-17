@@ -109,6 +109,13 @@ class DIDDoc(dict):
         """Parse out a key reference if present; return the key otherwise."""
         return '#' in key
 
+
+    @classmethod
+    def reference_id(cls, key: str):
+        """Parse out a key reference if present; return the key otherwise."""
+        return key.split("#")[1]
+
+
     def dereference_key(self, key: str) -> str:
         """Dereference a key from the publicKey array.
 
@@ -121,7 +128,8 @@ class DIDDoc(dict):
         found_key = next((
             public_key['publicKeyBase58']  # Get the first publicKeyBase58
             for public_key in self.get('publicKey', [])  # out of publicKey
-            if key_reference == public_key['id']  # Where the reference matches the id
+            if key_reference == public_key['id'] or
+               self.reference_id(key_reference) == public_key['id']  # Where the reference matches the id
         ), None)  # or return None
 
         if not found_key:
@@ -140,7 +148,7 @@ class DIDDoc(dict):
         if not service:
             raise NoSuitableService(
                 'No Service with type {} found in DID Document'
-                .format(DIDDoc.EXPECTED_SERVICE_TYPE)
+                    .format(DIDDoc.EXPECTED_SERVICE_TYPE)
             )
 
         return TheirInfo(

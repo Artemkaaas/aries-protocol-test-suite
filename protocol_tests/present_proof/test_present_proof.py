@@ -2,6 +2,7 @@
 Test the present-proof protocol family as defined at https://github.com/hyperledger/aries-rfcs/tree/master/features/0037-present-proof
 Roles tested: prover and verifier.
 """
+from asyncio import wait_for
 
 import pytest
 import aiohttp
@@ -18,7 +19,7 @@ from . import Handler
 
 
 @pytest.mark.asyncio
-@meta(protocol='present-proof', version='1.0', role='prover', name='verifier-initiated')
+@meta(protocol='present-proof', version='1.0', role='prover', name='as-prover')
 async def test_present_proof_v1_0_prover_verifier_initiated(backchannel, connection, cred_def, handler):
     """The test suite begins the present-proof flow by sending a request-presentation message to the agent-under-test."""
     handler.reset_events()
@@ -44,6 +45,11 @@ async def test_present_proof_v1_0_prover_verifier_initiated(backchannel, connect
     id = await handler.send_request_presentation(connection, proof_request)
     # The agent-under-test sends a proof for this proof request
     await backchannel.present_proof_v1_0_prover_send_proof(id)
+
+    with connection.next('did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/present-proof/1.0/presentation') as next_request:
+        presentation = await wait_for(next_request, 300)
+        await handler.handle_presentation(presentation, connection)
+
     # Make sure the proof was verified by the test-suite
     handler.assert_event("verified")
 
@@ -57,6 +63,11 @@ async def cred_def(handler, connection, backchannel):
         "age": "25"
     })
     await backchannel.issue_credential_v1_0_holder_accept_cred_offer(id)
+
+    with connection.next('did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/issue-credential/1.0/request-credential') as next_request:
+        request = await wait_for(next_request, 300)
+        await handler.handle_request_credential(request, connection)
+
     return cred_def_id
 
 ###
@@ -65,7 +76,7 @@ async def cred_def(handler, connection, backchannel):
 
 
 @pytest.mark.asyncio
-@meta(protocol='present-proof', version='1.0', role='verifier', name='prover-initiated')
+@meta(protocol='present-proof', version='1.0', role='verifier', name='as-verifier')
 async def test_present_proof_v1_0_issuer_initiated(backchannel, connection, handler):
     """The agent-under-test begins the present-proof flow by sending a request-presentation message to the agent-under-test."""
     handler.reset_events()
@@ -83,15 +94,20 @@ async def test_present_proof_v1_0_issuer_initiated(backchannel, connection, hand
             }
         },
         "requested_predicates": {
-            "int1_referent": {
-                "name": "int1",
-                "p_type": ">=",
-                "p_value": 5,
-                "restrictions": [{"cred_def_id": cred_def_id}]
-            }
+            # "int1_referent": {
+            #     "name": "int1",
+            #     "p_type": ">=",
+            #     "p_value": 5,
+            #     "restrictions": [{"cred_def_id": cred_def_id}]
+            # }
         }
     }
     id = await backchannel.present_proof_v1_0_verifier_send_proof_request(connection, proof_request)
+
+    with connection.next('did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/present-proof/1.0/request-presentation') as next_request:
+        request = await wait_for(next_request, 3000)
+        await handler.handle_request_presentation(request, connection)
+
     handler.assert_event("sent_proof")
     await backchannel.present_proof_v1_0_verifier_verify_proof(id)
 
